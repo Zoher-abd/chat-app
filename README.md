@@ -1,17 +1,10 @@
 
-# express
+# Web Engineering 1
 
-To install dependencies:
+## Template für Übungsaufgaben und Projekt
 
-``` bash
-bun install
-```
-
-To run:
+Start des Servers:
 
 ``` bash
-bun run server.ts
+bun server.ts
 ```
-
-This project was created using `bun init` in bun v1.2.10. [Bun](https://bun.sh)
-is a fast all-in-one JavaScript runtime.
