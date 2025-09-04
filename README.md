@@ -6,5 +6,5 @@
 Start des Servers:
 
 ``` bash
-bun server.ts
+bun src/server.ts
 ```

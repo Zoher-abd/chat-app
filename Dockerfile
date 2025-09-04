@@ -10,4 +10,4 @@ COPY package.json tsconfig.json server.ts static src .
 EXPOSE 8080
 
 # Run the server
-CMD ["bun", "server.ts"]
+CMD ["bun", "src/server.ts"]
