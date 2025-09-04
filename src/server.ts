@@ -5,8 +5,18 @@ const port = 8080;
 
 app.use(express.static("static"));
 
-app.get("/", (req, res) => {
-  res.send("");
+app.get("/{*splat}", (req, res) => {
+  res.send(`
+      <DOCTYPE html>
+      <html>
+        <body>
+        <h1>Web Engineering 1</h1>
+        <h2>Musterprojekt</h2>
+        <p><a href="/hello.html">Hallo</a></p>
+        <p>Requestpfad: ${req.path}</p>
+        </body>
+      </html>
+    `);
 });
 
 app.listen(port, () => {
