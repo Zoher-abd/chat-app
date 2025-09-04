@@ -4,7 +4,7 @@ FROM oven/bun:latest
 WORKDIR /app
 
 # Copy the neccessary files
-COPY package.json tsconfig.json static/ src/ .
+COPY package.json tsconfig.json static/ src/ ./
 
 # Expose port 8080
 EXPOSE 8080
