@@ -7,7 +7,7 @@ app.use(express.static("static"));
 
 app.get("/", (_req, res) => {
   res.send(`
-      <DOCTYPE html>
+      <!DOCTYPE html>
       <html>
         <body>
         <h1>Web Engineering 1</h1>
