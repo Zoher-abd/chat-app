@@ -6,15 +6,9 @@ const port = 8080;
 // middleware: serves all files below the `static` dir
 app.use(express.static("static"));
 
-// route: serves the root path `/`
-app.get("/", (_req, res) => {
-  let _html = `
-  `;
-  res.send(`
-    Web Engineering 1
-    - Musterprojekt
-    - siehe https://tramberend.bht-berlin.de/material/ws25/bmi-we1/
-  `);
+// route: always answers with 200 OK if healthy
+app.get("/health", (_req, res) => {
+  res.status(204).send();
 });
 
 // starts the listener
@@ -28,6 +22,5 @@ process.on("SIGINT", function () {
   process.exit();
 });
 
-// we may be running behind a reverse proxy
-app.set('trust proxy', true);
-
+// we may (and will) be running behind a reverse proxy
+app.set("trust proxy", true);

@@ -3,7 +3,7 @@ FROM oven/bun:latest
 # Enable automatic health checks
 RUN apt-get update && apt-get install -y curl
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
 WORKDIR /app
 
