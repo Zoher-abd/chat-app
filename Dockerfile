@@ -11,6 +11,7 @@ WORKDIR /app
 # Copy the neccessary files
 COPY package.json tsconfig.json .
 COPY src/ src/
+COPY static/ static/
 
 # Expose port 8080
 EXPOSE 8080
