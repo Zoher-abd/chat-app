@@ -22,5 +22,11 @@ process.on("SIGINT", function () {
   process.exit();
 });
 
+// docker sends a SIGTERM to stop a Container
+process.on("SIGTERM", function () {
+  console.log("Caught termination signal, exiting.");
+  process.exit();
+});
+
 // we may (and will) be running behind a reverse proxy
 app.set("trust proxy", true);
