@@ -8,7 +8,7 @@ app.use(express.static("static"));
 
 // route: always answers with 200 OK if healthy
 app.get("/health", (_req, res) => {
-  res.status(204).send();
+  res.status(200).type("text/plain").send("The server is up and running.");
 });
 
 // starts the listener
