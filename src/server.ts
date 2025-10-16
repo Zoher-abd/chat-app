@@ -13,7 +13,7 @@ app.get("/health", (_req, res) => {
 
 // starts the listener
 app.listen(port, () => {
-    console.log(⁠ Point your browser to: http://localhost:${port} ⁠);
+   // console.log(⁠ Point your browser to: http://localhost:${port} ⁠);
 });
 
 // allows ^C to stop the server and handle the exit
