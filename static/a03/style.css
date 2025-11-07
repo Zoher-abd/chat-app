@@ -1,0 +1,188 @@
+/* simple, wireframe-ähnlicher Look */
+* {
+    box-sizing: border-box
+}
+
+:root {
+    --line: #222;
+    --bg: #f7f7f7;
+    --card: #fff;
+    --accent: #2e7d32
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font: 16px/1.4 Arial, sans-serif;
+    background: var(--bg);
+    color: #111
+}
+
+header,
+footer {
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--line);
+    background: #fff
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px
+}
+
+nav a {
+    margin-right: 8px;
+    text-decoration: none;
+    color: var(--accent)
+}
+
+main {
+    max-width: 880px;
+    margin: 18px auto;
+    padding: 16px
+}
+
+.card {
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 12px 0
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.right {
+    margin-left: auto
+}
+
+.btn {
+    border: 2px solid var(--line);
+    background: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer
+}
+
+.btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent)
+}
+
+.btn.link {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    padding: 0
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin: 8px 0 4px
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    background: #fff
+}
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0
+}
+
+.rooms {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.room {
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.badge {
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 4px 10px;
+    background: #fff
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--line);
+    border-radius: 50%
+}
+
+.dot.online {
+    background: #2ecc71;
+    border-color: #2ecc71
+}
+
+.chat-area {
+    height: 420px;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.msg {
+    max-width: 70%;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff
+}
+
+.msg.me {
+    margin-left: auto
+}
+
+.typing {
+    opacity: .7;
+    font-style: italic
+}
+
+.input-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px
+}
+
+.input-bar input {
+    flex: 1
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px
+}
+
+.list .item {
+    border-bottom: 2px solid var(--line);
+    padding: 10px 4px
+}
