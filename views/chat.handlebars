@@ -1,0 +1,26 @@
+<header class="row">
+  <h2>{{room.name}}</h2>
+  <a class="btn right" href="{{room.backHref}}">
+    {{room.backText}}
+  </a>
+</header>
+
+<section class="card">
+  <div class="chat-area">
+    {{#messages}}
+      <div class="{{cssClass}}">
+        {{{text}}}
+      </div>
+    {{/messages}}
+
+    <div class="typing">{{typing}}</div>
+  </div>
+
+  <div class="input-bar">
+    <input
+      type="text"
+      placeholder="{{inputPlaceholder}}"
+    >
+    <button class="btn primary">{{sendText}}</button>
+  </div>
+</section>

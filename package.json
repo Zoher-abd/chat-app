@@ -13,9 +13,11 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/express-handlebars": "^6.0.2",
     "@types/handlebars": "^4.1.0",
     "@types/lowdb": "^2.0.3",
     "express": "^5.1.0",
+    "express-handlebars": "^8.0.3",
     "handlebars": "^4.7.8",
     "lowdb": "^7.0.1"
   }

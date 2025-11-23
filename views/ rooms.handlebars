@@ -1,0 +1,30 @@
+<section class="card">
+  <h2>Willkommen zurück, <b>{{user.name}}</b>!</h2>
+  <p>Wähle einen Raum aus, um dem Chat beizutreten:</p>
+</section>
+
+<section class="card">
+  <h2>Rooms</h2>
+  <div class="rooms">
+    {{#rooms}}
+      <div class="room">
+        <span>{{name}}</span>
+        <span class="right">{{status}}</span>
+      </div>
+    {{/rooms}}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Benutzer online</h2>
+  <p><b>{{onlineCount}}</b> Nutzer sind derzeit aktiv.</p>
+</section>
+
+<section class="card">
+  <h2>Navigation</h2>
+  <ul>
+    {{#navLinks}}
+      <li><a href="{{href}}">{{label}}</a></li>
+    {{/navLinks}}
+  </ul>
+</section>
