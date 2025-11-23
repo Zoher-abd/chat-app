@@ -13,6 +13,7 @@ COPY package.json tsconfig.json .
 COPY src/ src/
 COPY static/ static/
 COPY data*/ data/
+COPY views*/ views/
 
 # Expose port 8080
 EXPOSE 8080
