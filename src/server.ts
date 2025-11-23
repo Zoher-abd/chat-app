@@ -7,14 +7,17 @@ const port = 8080;
 
 app.set("trust proxy", true);
 
+// Basis-Pfade
 const rootDir = process.cwd();
 const viewsPath = path.join(rootDir, "views");
 const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
+// Statische Dateien (z.B. /a03/style.css)
 app.use(express.static(staticPath));
 
+// Handlebars konfigurieren
 app.engine(
   "handlebars",
   engine({
@@ -28,7 +31,7 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
-// Healthcheck
+// Health-Check
 app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
@@ -39,79 +42,56 @@ app.get("/", (_req, res) => {
 });
 
 /**
- * LOGIN
+ * LOGIN-SCREEN
  */
 app.get("/login", (_req, res) => {
   const context = {
     layout: "main",
     title: "Login",
-    form: {
-      emailLabel: "E-Mail / Username",
-      emailPlaceholder: "z. B. zoher@beispiel.de",
-      passwordLabel: "Passwort",
-      passwordPlaceholder: "••••••••",
-      loginTarget: "/rooms",
-      loginText: "Login",
-    },
-    register: {
-      text: "Noch kein Account?",
-      linkHref: "/register",
-      linkText: "Registrieren",
-    },
+    subtitle: "Melde dich bei der Chat-App an",
+    hint: "Noch kein Account? Jetzt registrieren!",
   };
 
   res.render("login", context);
 });
 
 /**
- * REGISTER
+ * REGISTER-SCREEN
  */
 app.get("/register", (_req, res) => {
   const context = {
     layout: "main",
     title: "Registrieren",
-    form: {
-      usernameLabel: "Username",
-      usernamePlaceholder: "Dein Name",
-      emailLabel: "E-Mail",
-      emailPlaceholder: "name@mail.de",
-      pw1Label: "Passwort",
-      pw1Placeholder: "••••••••",
-      pw2Label: "Passwort bestätigen",
-      pw2Placeholder: "••••••••",
-      submitTarget: "/rooms",
-      submitText: "Konto erstellen",
-      backHref: "/login",
-      backText: "Zurück",
-    },
+    subtitle: "Erstelle deinen Account",
+    benefits: [
+      "Chatte mit anderen Nutzer:innen in Echtzeit",
+      "Erstelle dein persönliches Profil",
+      "Tritt verschiedenen Räumen bei",
+    ],
   };
 
   res.render("register", context);
 });
 
 /**
- * DASHBOARD
+ * DASHBOARD-SCREEN
  */
 app.get("/dashboard", (_req, res) => {
   const context = {
     layout: "main",
     title: "Dashboard",
     user: {
-      name: "Zoher",
+      name: "Benutzer",
     },
-    stats: [
-      { label: "Gesendete Nachrichten", value: "42" },
-      { label: "Online-Zeit heute", value: "1h 15min" },
-      { label: "Aktive Räume", value: "3" },
-    ],
-    shortcuts: [
-      { href: "/chat", text: "➡ Direkt zum Chat", primary: true },
-      { href: "/rooms", text: "🗂 Alle Räume", primary: false },
-    ],
-    news: [
-      "🔹 Neue Chatfunktionen in Version 1.2",
-      "🔹 Dunkelmodus jetzt verfügbar",
-      "🔹 Freunde-Feature wird bald hinzugefügt!",
+    stats: {
+      roomsJoined: 3,
+      messagesSent: 42,
+      onlineSince: "10 Minuten",
+    },
+    todos: [
+      { title: "Profil vervollständigen", done: false },
+      { title: "Einem neuen Raum beitreten", done: false },
+      { title: "Willkommensnachricht im Chat schreiben", done: true },
     ],
   };
 
@@ -119,7 +99,7 @@ app.get("/dashboard", (_req, res) => {
 });
 
 /**
- * ROOMS
+ * ROOMS-SCREEN
  */
 app.get("/rooms", (_req, res) => {
   const context = {
@@ -129,47 +109,41 @@ app.get("/rooms", (_req, res) => {
       name: "Benutzer",
     },
     rooms: [
-      { name: "Raum 1", status: "⚪" },
+      { name: "Raum 1", status: "⚪ Offline" },
       { name: "Raum 2", status: "🟢 Online" },
-      { name: "Raum 3", status: "⚪" },
+      { name: "Raum 3", status: "⚪ Offline" },
     ],
     onlineCount: 12,
-    navLinks: [
-      { href: "/chat", label: "Zum Chatroom" },
-      { href: "/profile", label: "Zum Profil" },
-      { href: "/login", label: "Logout" },
-    ],
   };
 
   res.render("rooms", context);
 });
 
 /**
- * CHAT
+ * CHAT-SCREEN
  */
 app.get("/chat", (_req, res) => {
   const context = {
     layout: "main",
     title: "Chat",
-    room: {
+    activeRoom: {
       name: "Raum 2",
-      backHref: "/rooms",
-      backText: "Zurück",
+    },
+    user: {
+      name: "Benutzer",
     },
     messages: [
-      { cssClass: "msg", text: "🙂 <b>Anna:</b> Hallo!" },
-      { cssClass: "msg me", text: "Hallo 👋" },
+      { author: "Alice", text: "Hey, alles klar?", time: "20:15", own: false },
+      { author: "Benutzer", text: "Ja, alles gut!", time: "20:16", own: true },
+      { author: "Bob", text: "Wer ist heute noch online?", time: "20:17", own: false },
     ],
-    typing: "Anna schreibt …",
-    inputPlaceholder: "Nachricht eingeben …",
-    sendText: "▶",
   };
 
   res.render("chat", context);
 });
 
 /**
- * PROFILE
+ * PROFILE-SCREEN
  */
 app.get("/profile", (_req, res) => {
   const context = {
@@ -177,15 +151,12 @@ app.get("/profile", (_req, res) => {
     title: "Profil",
     user: {
       name: "Benutzer",
+      email: "user@example.com",
+      status: "Online",
+      joined: "01.01.2025",
+      bio: "Ich nutze diese Chat-App, um mit Freunden in Kontakt zu bleiben.",
     },
-    backHref: "/rooms",
-    backText: "Zurück",
-    menuItems: [
-      "Sprache ändern",
-      "Account wechseln",
-      "Über uns",
-      "Ausloggen",
-    ],
+    interests: ["Programmieren", "Gaming", "Musik", "Reisen"],
   };
 
   res.render("profile", context);
