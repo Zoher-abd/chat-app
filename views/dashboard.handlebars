@@ -1,39 +1,22 @@
 <section class="card">
-  <h2>Willkommen zurück, <b>{{user.name}}</b> 👋</h2>
-  <p>
-    Hier findest du deine aktuellen Chat-Aktivitäten
-    und schnellen Zugriff auf alle Räume.
-  </p>
+  <h2>Willkommen zurück, <b>{{user.username}}</b>!</h2>
+  <p>Wähle einen Raum aus, um dem Chat beizutreten:</p>
 </section>
 
 <section class="card">
-  <h2>Statistiken</h2>
-  <ul>
-    {{#stats}}
-      <li>{{label}}: <b>{{value}}</b></li>
-    {{/stats}}
-  </ul>
-</section>
-
-<section class="card">
-  <h2>Schnellzugriff</h2>
-  <div class="row">
-    {{#shortcuts}}
-      <a
-        class="btn {{#primary}}primary{{/primary}}"
-        href="{{href}}"
-      >
-        {{text}}
-      </a>
-    {{/shortcuts}}
+  <h2>Rooms</h2>
+  <div class="rooms">
+    {{#each rooms}}
+      <div class="room">
+        <span>{{this.name}}</span>
+        <span class="right">🟢</span>
+      </div>
+    {{/each}}
   </div>
 </section>
 
 <section class="card">
-  <h2>Neuigkeiten</h2>
-  <p>
-    {{#news}}
-      {{.}}<br>
-    {{/news}}
-  </p>
+  <h2>Statistiken</h2>
+  <p>Messages: {{stats.messagesSent}}</p>
+  <p>Online seit: {{stats.onlineSince}}</p>
 </section>

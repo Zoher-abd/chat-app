@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>A05 </title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { max-width: 900px; margin: 20px auto; font-family: sans-serif; }
+    h1, h2 { color: #333; }
+    code { background:#eee; padding:3px 5px; border-radius:4px; }
+    .card { background:#fafafa; padding:16px; border-radius:8px; margin-bottom:20px; border:1px solid #ddd; }
+  </style>
+</head>
+<body>
+
+<h1>A05</h1>
+
+<div class="card">
+  <h2>1. Beschreibung des Datenmodells</h2>
+  <p>In dieser Aufgabe wurde eine kleine Chat-Datenbank umgesetzt.  
+     Das Datenmodell besteht aus drei Tabellen:</p>
+
+  <ul>
+    <li><b>rooms</b> – enthält Chat-Räume (id, name)</li>
+    <li><b>users</b> – Beispielbenutzer (id, name)</li>
+    <li><b>messages</b> – Nachrichten (id, room_id, user_id, author, text, created_at)</li>
+  </ul>
+
+  <p>Jeder Raum kann beliebig viele Nachrichten enthalten, und jede Nachricht gehört genau zu einem Benutzer.</p>
+</div>
+
+<div class="card">
+  <h2>2. ER-Diagramm</h2>
+  <p>Das ER-Diagramm befindet sich in <code>static/a05/er-diagram.png</code>.</p>
+  <img src="a05/erdiagram.png" alt="ER Diagramm" style="max-width:100%;border:1px solid #ccc;">
+</div>
+
+<div class="card">
+  <h2>3. Verlinkung zu den implementierten Routen</h2>
+
+  <ul>
+    <li><a href="/login">/login</a> – Login-Seite</li>
+    <li><a href="/register">/register</a> – Registrieren</li>
+    <li><a href="/dashboard">/dashboard</a> – Übersicht</li>
+    <li><a href="/chat?roomId=1">/chatroom</a> – Chat für Raum 1</li>
+    <li><a href="/profile">/profile</a> – Profilseite</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>4. Wichtige SQL-Abfragen & DB-Funktionen</h2>
+
+  <p>Der Datenbankzugriff ist gekapselt in <code>src/sqlite.ts</code>.  
+     Beispiele wichtiger Funktionen:</p>
+
+<pre><code>getAllRooms()
+getAllUsers()
+getMessagesForRoom(roomId)
+</code></pre>
+
+  <p>Beispiele verwendeter SQL-Abfragen:</p>
+
+<pre><code>SELECT * FROM rooms;
+SELECT * FROM users;
+SELECT * FROM messages WHERE room_id = ? ORDER BY created_at ASC;
+</code></pre>
+</div>
+
+<div class="card">
+  <h2>5. Beschreibung der Testdaten</h2>
+  <p>Die Testdaten werden durch die Dateien <code>create.sql</code> und <code>populate.sql</code>
+     initialisiert. Dabei werden Räume, Benutzer und Beispiel-Nachrichten automatisch erstellt.</p>
+</div>
+
+</body>
+</html>

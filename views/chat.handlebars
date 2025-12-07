@@ -1,26 +1,22 @@
 <header class="row">
-  <h2>{{room.name}}</h2>
-  <a class="btn right" href="{{room.backHref}}">
-    {{room.backText}}
-  </a>
+  <h2>{{activeRoom.name}}</h2>
+  <a class="btn right" href="/rooms">Zurück</a>
 </header>
 
 <section class="card">
   <div class="chat-area">
-    {{#messages}}
-      <div class="{{cssClass}}">
-        {{{text}}}
+    {{#each messages}}
+      <div class="msg {{#if mine}}me{{/if}}">
+        {{#unless mine}}🙂 <b>{{author}}:</b>{{/unless}}
+        {{text}}
       </div>
-    {{/messages}}
+    {{/each}}
 
-    <div class="typing">{{typing}}</div>
+    <div class="typing">{{typingUser}} schreibt …</div>
   </div>
 
   <div class="input-bar">
-    <input
-      type="text"
-      placeholder="{{inputPlaceholder}}"
-    >
-    <button class="btn primary">{{sendText}}</button>
+    <input type="text" placeholder="Nachricht eingeben …">
+    <button class="btn primary">▶</button>
   </div>
 </section>

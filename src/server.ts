@@ -2,22 +2,31 @@ import express from "express";
 import { engine } from "express-handlebars";
 import path from "path";
 
+import * as db from "./sqlite";
+import type { Room } from "./sqlite";
+
 const app = express();
 const port = 8080;
 
-app.set("trust proxy", true);
-
-// Basis-Pfade
+// ----------------------------------------------------
+// Pfade
+// ----------------------------------------------------
 const rootDir = process.cwd();
 const viewsPath = path.join(rootDir, "views");
 const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
-// Statische Dateien (z.B. /a03/style.css)
+// Body-Parsing
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// statische Dateien
 app.use(express.static(staticPath));
 
-// Handlebars konfigurieren
+// ----------------------------------------------------
+// Handlebars
+// ----------------------------------------------------
 app.engine(
   "handlebars",
   engine({
@@ -31,137 +40,121 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
-// Health-Check
+// ----------------------------------------------------
+// HEALTH & DB INIT
+// ----------------------------------------------------
 app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
 
-// Startseite -> Login
-app.get("/", (_req, res) => {
-  res.redirect("/login");
-});
+app.set("trust proxy", true);
+await db.connect();
 
-/**
- * LOGIN-SCREEN
- */
+// ----------------------------------------------------
+// ROUTES
+// ----------------------------------------------------
+
+app.get("/", (_req, res) => res.redirect("/login"));
+
+// LOGIN
 app.get("/login", (_req, res) => {
-  const context = {
-    layout: "main",
-    title: "Login",
-    subtitle: "Melde dich bei der Chat-App an",
-    hint: "Noch kein Account? Jetzt registrieren!",
-  };
-
-  res.render("login", context);
+  res.render("login", { title: "Login" });
 });
 
-/**
- * REGISTER-SCREEN
- */
+// REGISTER
 app.get("/register", (_req, res) => {
-  const context = {
-    layout: "main",
-    title: "Registrieren",
-    subtitle: "Erstelle deinen Account",
-    benefits: [
-      "Chatte mit anderen Nutzer:innen in Echtzeit",
-      "Erstelle dein persönliches Profil",
-      "Tritt verschiedenen Räumen bei",
-    ],
-  };
-
-  res.render("register", context);
+  res.render("register", { title: "Registrieren" });
 });
 
-/**
- * DASHBOARD-SCREEN
- */
+// DASHBOARD
 app.get("/dashboard", (_req, res) => {
-  const context = {
-    layout: "main",
-    title: "Dashboard",
-    user: {
-      name: "Benutzer",
-    },
+  const users = db.getAllUsers();
+  const rooms = db.getAllRooms();
+
+  const currentUser = users[0];
+
+  res.render("dashboard", {
+    title: "Chat-App Dashboard",
+    user: currentUser,
+    rooms,
     stats: {
-      roomsJoined: 3,
+      roomsJoined: rooms.length,
       messagesSent: 42,
       onlineSince: "10 Minuten",
     },
-    todos: [
-      { title: "Profil vervollständigen", done: false },
-      { title: "Einem neuen Raum beitreten", done: false },
-      { title: "Willkommensnachricht im Chat schreiben", done: true },
-    ],
-  };
-
-  res.render("dashboard", context);
+  });
 });
 
-/**
- * ROOMS-SCREEN
- */
+// ROOMS
 app.get("/rooms", (_req, res) => {
-  const context = {
-    layout: "main",
-    title: "Rooms",
-    user: {
-      name: "Benutzer",
-    },
-    rooms: [
-      { name: "Raum 1", status: "⚪ Offline" },
-      { name: "Raum 2", status: "🟢 Online" },
-      { name: "Raum 3", status: "⚪ Offline" },
-    ],
-    onlineCount: 12,
-  };
+  const rooms = db.getAllRooms();
 
-  res.render("rooms", context);
+  res.render("rooms", {
+    title: "Rooms",
+    rooms,
+    onlineCount: 12,
+  });
 });
 
-/**
- * CHAT-SCREEN
- */
-app.get("/chat", (_req, res) => {
+// CHAT
+app.get("/chat", (req, res) => {
+  const roomId = Number(req.query.roomId ?? 2); // Standard: Raum 2
+
+  const rooms = db.getAllRooms();
+  if (!rooms || rooms.length === 0) {
+    res.status(500).send("Keine Räume in der Datenbank.");
+    return;
+  }
+
+  const room = rooms.find((r) => r.id === roomId) ?? rooms[0];
+  if (!room) {
+    res.status(500).send("Konnte keinen Raum bestimmen.");
+    return;
+  }
+
+  const messagesRaw = db.getMessagesForRoom(room.id);
+
+  const users = db.getAllUsers();
+  if (!users || users.length === 0) {
+    res.status(500).send("Keine Benutzer vorhanden.");
+    return;
+  }
+
+  const currentUser = users[0]!;
+
+  const messages = messagesRaw.map((m) => ({
+    author: m.author,
+    text: m.text,
+    mine: m.user_id === currentUser.id,
+  }));
+
   const context = {
     layout: "main",
-    title: "Chat",
-    activeRoom: {
-      name: "Raum 2",
-    },
-    user: {
-      name: "Benutzer",
-    },
-    messages: [
-      { author: "Alice", text: "Hey, alles klar?", time: "20:15", own: false },
-      { author: "Benutzer", text: "Ja, alles gut!", time: "20:16", own: true },
-      { author: "Bob", text: "Wer ist heute noch online?", time: "20:17", own: false },
-    ],
+    title: `Chat – ${room.name}`,
+    activeRoom: room,
+    user: currentUser,
+    messages,
+    typingUser: "Anna",
   };
 
   res.render("chat", context);
 });
 
-/**
- * PROFILE-SCREEN
- */
+
+// PROFILE
 app.get("/profile", (_req, res) => {
-  const context = {
-    layout: "main",
-    title: "Profil",
-    user: {
-      name: "Benutzer",
-      email: "user@example.com",
-      status: "Online",
-      joined: "01.01.2025",
-      bio: "Ich nutze diese Chat-App, um mit Freunden in Kontakt zu bleiben.",
-    },
-    interests: ["Programmieren", "Gaming", "Musik", "Reisen"],
-  };
+  const users = db.getAllUsers();
+  const currentUser = users[0];
 
-  res.render("profile", context);
+  res.render("profile", {
+    title: "Profil / Einstellungen",
+    user: currentUser,
+  });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Server läuft auf http://localhost:${port}`);
-});
+// ----------------------------------------------------
+// Server start
+// ----------------------------------------------------
+app.listen(port, () =>
+  console.log(`🚀 Server läuft auf http://localhost:${port}`)
+);

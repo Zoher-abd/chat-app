@@ -1,44 +1,22 @@
-<header>
-  <h2>{{title}}</h2>
-</header>
+<header><h1>Registrieren</h1></header>
 
 <section class="card">
   <form>
-    <label for="user">{{form.usernameLabel}}</label>
-    <input
-      id="user"
-      type="text"
-      placeholder="{{form.usernamePlaceholder}}"
-    >
+    <label for="user">Username</label>
+    <input id="user" type="text">
 
-    <label for="mail">{{form.emailLabel}}</label>
-    <input
-      id="mail"
-      type="email"
-      placeholder="{{form.emailPlaceholder}}"
-    >
+    <label for="mail">E-Mail</label>
+    <input id="mail" type="email">
 
-    <label for="p1">{{form.pw1Label}}</label>
-    <input
-      id="p1"
-      type="password"
-      placeholder="{{form.pw1Placeholder}}"
-    >
+    <label for="p1">Passwort</label>
+    <input id="p1" type="password">
 
-    <label for="p2">{{form.pw2Label}}</label>
-    <input
-      id="p2"
-      type="password"
-      placeholder="{{form.pw2Placeholder}}"
-    >
+    <label for="p2">Passwort bestätigen</label>
+    <input id="p2" type="password">
 
     <div class="row" style="margin-top:12px">
-      <button class="btn primary" formaction="{{form.submitTarget}}">
-        {{form.submitText}}
-      </button>
-      <a class="btn right" href="{{form.backHref}}">
-        {{form.backText}}
-      </a>
+      <button class="btn primary" formaction="/rooms">Konto erstellen</button>
+      <a class="btn right" href="/login">Zurück</a>
     </div>
   </form>
 </section>

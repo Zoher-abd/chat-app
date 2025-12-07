@@ -1,34 +1,20 @@
 <section class="card">
-  <h2>{{title}}</h2>
-
   <form>
-    <label for="email">{{form.emailLabel}}</label>
-    <input
-      id="email"
-      type="text"
-      placeholder="{{form.emailPlaceholder}}"
-    >
+    <label for="email">E-Mail / Username</label>
+    <input id="email" type="text">
 
-    <label for="pw">{{form.passwordLabel}}</label>
-    <input
-      id="pw"
-      type="password"
-      placeholder="{{form.passwordPlaceholder}}"
-    >
+    <label for="pw">Passwort</label>
+    <input id="pw" type="password">
 
     <div class="row" style="margin-top:12px">
-      <button class="btn primary" formaction="{{form.loginTarget}}">
-        {{form.loginText}}
-      </button>
+      <button class="btn primary" formaction="/rooms">Login</button>
     </div>
   </form>
 </section>
 
 <section class="card">
   <div class="row">
-    <span>{{register.text}}</span>
-    <a class="btn link right" href="{{register.linkHref}}">
-      {{register.linkText}}
-    </a>
+    <span>Noch kein Account?</span>
+    <a class="btn link right" href="/register">Registrieren</a>
   </div>
 </section>
