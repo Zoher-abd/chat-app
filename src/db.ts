@@ -1,18 +1,17 @@
-// src/db.ts
+
 import { Database } from "bun:sqlite";
 
-// ----- Typen -----
 export type User = {
   id: number;
   username: string;
   email: string;
-  created_at: string; // falls du das nicht in der DB hast, ist das einfach ein leerer String
+  created_at: string; 
 };
 
 export type Room = {
   id: number;
   name: string;
-  // keine description-Spalte in der DB → optional/ignorieren
+  
 };
 
 export type Message = {
@@ -21,14 +20,12 @@ export type Message = {
   room_id: number;
   user_id: number;
   author: string;
-  // kein created_at in der DB → wir benutzen das später nur ggf. als Dummy
+  
 };
 
-// eine einzige DB-Verbindung
 const db = new Database("data/chat.db");
 db.exec("PRAGMA foreign_keys = ON;");
 
-// ---- Abfragen ----
 
 export function getAllUsers(): User[] {
   const stmt = db.prepare(
@@ -61,8 +58,7 @@ export function getMessagesForRoom(roomId: number): Message[] {
 }
 
 export function insertMessage(roomId: number, userId: number, text: string) {
-  // in deiner message-Tabelle gibt es keine created_at-Spalte,
-  // also fügen wir nur text, room_id, user_id ein
+
   const stmt = db.prepare(
     "insert into message (text, room_id, user_id) values (?, ?, ?)"
   );

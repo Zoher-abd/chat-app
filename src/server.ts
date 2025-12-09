@@ -8,25 +8,19 @@ import type { Room } from "./sqlite";
 const app = express();
 const port = 8080;
 
-// ----------------------------------------------------
-// Pfade
-// ----------------------------------------------------
 const rootDir = process.cwd();
 const viewsPath = path.join(rootDir, "views");
 const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
-// Body-Parsing
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// statische Dateien
 app.use(express.static(staticPath));
 
-// ----------------------------------------------------
-// Handlebars
-// ----------------------------------------------------
+
 app.engine(
   "handlebars",
   engine({
@@ -40,9 +34,7 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
-// ----------------------------------------------------
-// HEALTH & DB INIT
-// ----------------------------------------------------
+
 app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
@@ -50,9 +42,6 @@ app.get("/health", (_req, res) => {
 app.set("trust proxy", true);
 await db.connect();
 
-// ----------------------------------------------------
-// ROUTES
-// ----------------------------------------------------
 
 app.get("/", (_req, res) => res.redirect("/login"));
 
@@ -152,9 +141,6 @@ app.get("/profile", (_req, res) => {
   });
 });
 
-// ----------------------------------------------------
-// Server start
-// ----------------------------------------------------
 app.listen(port, () =>
   console.log(`🚀 Server läuft auf http://localhost:${port}`)
 );
