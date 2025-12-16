@@ -3,7 +3,6 @@ import { engine } from "express-handlebars";
 import path from "path";
 
 import * as db from "./sqlite";
-import type { Room } from "./sqlite";
 
 const app = express();
 const port = 8080;
@@ -14,13 +13,23 @@ const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+//neu für meine hilfe 
+app.use((req, res, next) => {
+  const url = req.originalUrl ?? "/";
+  const pathOnly = url.split("?").at(0) ?? "/";
+  const firstSeg = pathOnly.split("/").filter(Boolean).at(0);
+
+  res.locals.base = firstSeg && /^s\d+$/i.test(firstSeg) ? `/${firstSeg}` : "";
+  next();
+});
+
+
 app.use(express.static(staticPath));
 
-
+// Handlebars
 app.engine(
   "handlebars",
   engine({
@@ -34,15 +43,15 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
+// DB connect
+await db.connect();
 
+// Health
 app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
 
-app.set("trust proxy", true);
-await db.connect();
-
-
+// Start
 app.get("/", (_req, res) => res.redirect("/login"));
 
 // LOGIN
@@ -60,7 +69,8 @@ app.get("/dashboard", (_req, res) => {
   const users = db.getAllUsers();
   const rooms = db.getAllRooms();
 
-  const currentUser = users[0];
+  if (!users.length) return res.status(500).send("Keine Benutzer in der DB.");
+  const currentUser = users[0]!;
 
   res.render("dashboard", {
     title: "Chat-App Dashboard",
@@ -77,7 +87,6 @@ app.get("/dashboard", (_req, res) => {
 // ROOMS
 app.get("/rooms", (_req, res) => {
   const rooms = db.getAllRooms();
-
   res.render("rooms", {
     title: "Rooms",
     rooms,
@@ -87,28 +96,16 @@ app.get("/rooms", (_req, res) => {
 
 // CHAT
 app.get("/chat", (req, res) => {
-  const roomId = Number(req.query.roomId ?? 2); // Standard: Raum 2
+  const roomId = Number(req.query.roomId ?? 2);
 
   const rooms = db.getAllRooms();
-  if (!rooms || rooms.length === 0) {
-    res.status(500).send("Keine Räume in der Datenbank.");
-    return;
-  }
+  if (!rooms.length) return res.status(500).send("Keine Räume in der Datenbank.");
 
-  const room = rooms.find((r) => r.id === roomId) ?? rooms[0];
-  if (!room) {
-    res.status(500).send("Konnte keinen Raum bestimmen.");
-    return;
-  }
-
+  const room = rooms.find((r) => r.id === roomId) ?? rooms[0]!;
   const messagesRaw = db.getMessagesForRoom(room.id);
 
   const users = db.getAllUsers();
-  if (!users || users.length === 0) {
-    res.status(500).send("Keine Benutzer vorhanden.");
-    return;
-  }
-
+  if (!users.length) return res.status(500).send("Keine Benutzer vorhanden.");
   const currentUser = users[0]!;
 
   const messages = messagesRaw.map((m) => ({
@@ -117,30 +114,31 @@ app.get("/chat", (req, res) => {
     mine: m.user_id === currentUser.id,
   }));
 
-  const context = {
-    layout: "main",
+  res.render("chat", {
     title: `Chat – ${room.name}`,
     activeRoom: room,
     user: currentUser,
     messages,
     typingUser: "Anna",
-  };
-
-  res.render("chat", context);
+  });
 });
-
 
 // PROFILE
 app.get("/profile", (_req, res) => {
   const users = db.getAllUsers();
-  const currentUser = users[0];
+  if (!users.length) return res.status(500).send("Keine Benutzer in der DB.");
 
+  const currentUser = users[0]!;
   res.render("profile", {
     title: "Profil / Einstellungen",
     user: currentUser,
   });
 });
 
-app.listen(port, () =>
-  console.log(`🚀 Server läuft auf http://localhost:${port}`)
-);
+app.use((_req, res) => {
+  res.status(404).type("text/plain").send("404 – Not Found");
+});
+
+app.listen(port, () => {
+  console.log(`Server läuft auf http://localhost:${port}`);
+});
