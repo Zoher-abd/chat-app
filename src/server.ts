@@ -1,6 +1,6 @@
 import express from "express";
 import { engine } from "express-handlebars";
-import path from "path";
+import path from 'path';
 
 import * as db from "./sqlite";
 
@@ -16,15 +16,13 @@ const staticPath = path.join(rootDir, "static");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-//neu für meine hilfe 
-app.use((req, res, next) => {
-  const url = req.originalUrl ?? "/";
-  const pathOnly = url.split("?").at(0) ?? "/";
-  const firstSeg = pathOnly.split("/").filter(Boolean).at(0);
 
-  res.locals.base = firstSeg && /^s\d+$/i.test(firstSeg) ? `/${firstSeg}` : "";
+app.use((req, res, next) => {
+  res.locals.base =
+    path.relative(path.dirname(req.path), "/") || ".";
   next();
 });
+
 
 
 app.use(express.static(staticPath));
