@@ -1,3 +1,9 @@
+-- Drop in richtiger Reihenfolge (wegen Foreign Keys)
+drop table if exists message;
+drop table if exists room_member;
+drop table if exists room;
+drop table if exists user;
+
 -- USER: registrierte Benutzer der Chat-App
 create table if not exists user (
   id            integer primary key,
@@ -21,24 +27,23 @@ create table if not exists room_member (
   id         integer primary key,
   user_id    integer not null,
   room_id    integer not null,
-  role       text    not null default 'member',  -- z.B. member / admin
+  role       text    not null default 'member',  -- member / admin
   joined_at  text    not null,
 
-  foreign key (user_id) references user(id),
-  foreign key (room_id) references room(id),
+  foreign key (user_id) references user(id) on delete cascade,
+  foreign key (room_id) references room(id) on delete cascade,
 
-  -- Ein User soll pro Raum nur einmal vorkommen
   unique (user_id, room_id)
 );
 
 -- MESSAGE: Nachrichten in einem Raum
 create table if not exists message (
-  id         integer primary key,
-  user_id    integer not null,
-  room_id    integer not null,
-  text       text    not null,
-  sent_at    text    not null,
+  id      integer primary key,
+  user_id integer not null,
+  room_id integer not null,
+  text    text    not null,
+  sent_at text    not null,
 
-  foreign key (user_id) references user(id),
-  foreign key (room_id) references room(id)
+  foreign key (user_id) references user(id) on delete cascade,
+  foreign key (room_id) references room(id) on delete cascade
 );

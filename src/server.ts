@@ -3,6 +3,7 @@ import { engine } from "express-handlebars";
 import path from 'path';
 
 import * as db from "./sqlite";
+db.connect();
 
 const app = express();
 const port = 8080;
@@ -37,6 +38,7 @@ app.engine(
     partialsDir: partialsPath,
   })
 );
+
 
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
@@ -79,7 +81,7 @@ app.get("/dashboard", (_req, res) => {
       messagesSent: 42,
       onlineSince: "10 Minuten",
     },
-  });
+  }); 
 });
 
 // ROOMS
