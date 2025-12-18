@@ -60,7 +60,6 @@ export function getMessagesForRoom(roomId: number): Message[] {
     .all(roomId) as Message[];
 }
 
-// Optional (falls du später Nachrichten senden willst)
 export function insertMessage(roomId: number, userId: number, text: string) {
   db.query(
     "INSERT INTO message (user_id, room_id, text, sent_at) VALUES (?, ?, ?, datetime())"

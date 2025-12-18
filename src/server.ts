@@ -24,7 +24,6 @@ const staticPath = path.join(rootDir, "static");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// WE1: base-Pfad relativ berechnen
 app.use((req, res, next) => {
   res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
@@ -47,8 +46,7 @@ app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
 // -------------------------------
-// A06: DB bei Serverstart neu aufsetzen
-// (damit gelöschte Messages nach Neustart wieder da sind)
+// (damit gelöschte Messages nach Neustart wieder da sind
 // -------------------------------
 try {
   if (fs.existsSync("data/chat.db")) {
@@ -60,7 +58,6 @@ try {
   console.error("DB init failed:", e);
 }
 
-// DB verbinden (genau 1x!)
 db.connect();
 
 // -------------------------------
@@ -123,7 +120,6 @@ app.post("/rooms", (req, res) => {
   try {
     db.createRoom(name);
   } catch {
-    // z.B. UNIQUE constraint failed (Raumname existiert schon)
     return res.redirect("/rooms?error=room-exists");
   }
 
@@ -157,7 +153,6 @@ app.post("/room/:id/edit", (req, res) => {
   try {
     db.updateRoomName(id, name);
   } catch {
-    // z.B. UNIQUE constraint (Name existiert schon)
     return res.redirect(`/room/${id}/edit?error=exists`);
   }
 
@@ -209,7 +204,7 @@ app.get("/profile", (_req, res) => {
 });
 
 // -------------------------------
-// A06.4: Nachricht bearbeiten (GET Formular)
+// Nachricht bearbeiten 
 // -------------------------------
 app.get("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
@@ -228,7 +223,7 @@ app.get("/message/:id/edit", (req, res) => {
 });
 
 // -------------------------------
-// A06.4: Nachricht bearbeiten (POST speichern)
+// Nachricht bearbeiten
 // -------------------------------
 app.post("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
@@ -248,7 +243,7 @@ app.post("/message/:id/edit", (req, res) => {
 
 
 // -------------------------------
-// A06.1: Nachricht löschen (GET)
+// Nachricht löschen 
 // -------------------------------
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
@@ -265,7 +260,7 @@ app.get("/message/:id/delete", (req, res) => {
 });
 
 // -------------------------------
-// A06.2 + A06.3: Nachricht senden (POST)
+// Nachricht senden 
 // -------------------------------
 app.post("/chat/message", (req, res) => {
   const roomId = Number(req.body.roomId);
