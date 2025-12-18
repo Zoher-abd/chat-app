@@ -1,22 +1,46 @@
 <header class="row">
   <h2>{{activeRoom.name}}</h2>
-  <a class="btn right" href="/rooms">Zurück</a>
+  <a class="btn right" href="{{base}}/rooms">Zurück</a>
 </header>
 
 <section class="card">
   <div class="chat-area">
     {{#each messages}}
       <div class="msg {{#if mine}}me{{/if}}">
-        {{#unless mine}}🙂 <b>{{author}}:</b>{{/unless}}
+        {{#unless mine}}
+          🙂 <b>{{author}}:</b>
+        {{/unless}}
+
         {{text}}
+
+        {{#if mine}}
+          <span class="right">
+            <a class="btn link"
+               href="{{../base}}/message/{{id}}/edit?roomId={{../activeRoom.id}}"
+               title="Bearbeiten">✏️</a>
+
+            <a class="btn link"
+               href="{{../base}}/message/{{id}}/delete?roomId={{../activeRoom.id}}"
+               title="Löschen">🗑️</a>
+          </span>
+        {{/if}}
       </div>
     {{/each}}
 
     <div class="typing">{{typingUser}} schreibt …</div>
   </div>
 
-  <div class="input-bar">
-    <input type="text" placeholder="Nachricht eingeben …">
-    <button class="btn primary">▶</button>
-  </div>
+  <!-- A06.2 + A06.3: Formular zum Senden einer neuen Nachricht -->
+  <form class="input-bar" method="post" action="{{base}}/chat/message">
+    <input type="hidden" name="roomId" value="{{activeRoom.id}}">
+
+    <input
+      type="text"
+      name="text"
+      placeholder="Nachricht eingeben …"
+      required
+    >
+
+    <button class="btn primary" type="submit">▶</button>
+  </form>
 </section>

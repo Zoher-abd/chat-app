@@ -1,12 +1,25 @@
 <section class="card">
+  <h2>Neuen Raum erstellen</h2>
+
+  <form method="post" action="{{base}}/rooms">
+    <input type="text" name="name" placeholder="Raumname" required>
+    <button class="btn primary" type="submit">Anlegen</button>
+  </form>
+</section>
+
+<section class="card">
   <h2>Rooms</h2>
 
   <div class="rooms">
     {{#each rooms}}
       <div class="room">
-        <a href="/chat?roomId={{this.id}}">
+        <a href="{{../base}}/chat?roomId={{this.id}}">
           {{this.name}}
         </a>
+
+        <a class="btn link right"
+           href="{{../base}}/room/{{this.id}}/edit"
+           title="Umbenennen">✏️</a>
       </div>
     {{/each}}
   </div>

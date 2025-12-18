@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>A06 – Interaktionen (GET/POST)</title>
+  <link rel="stylesheet" href="a03/style.css">
+  <style>
+    body { max-width: 900px; margin: 20px auto; font-family: sans-serif; }
+    h1, h2, h3 { margin-top: 18px; }
+    code { background:#eee; padding:2px 6px; border-radius:4px; }
+    .card { background:#fafafa; padding:16px; border-radius:8px; border:1px solid #ddd; margin: 14px 0; }
+    img { max-width: 100%; border: 1px solid #ccc; border-radius: 6px; }
+    ul { line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<h1>A06 – Interaktive Funktionen (GET/POST)</h1>
+
+<div class="card">
+  <h2>1. Kurzbeschreibung</h2>
+  <p>
+    In Aufgabe A06 wurde die Chat-App um interaktive Funktionen erweitert. Es wurden Links zur Änderung von
+    Datensätzen (GET) sowie Formulare zum Erzeugen und Bearbeiten von Daten (POST) implementiert.
+    Login/Registrierung sind weiterhin nicht vollständig umgesetzt, daher wird zum Testen zunächst ein fest
+    kodierter Benutzer aus der Datenbank verwendet.
+  </p>
+</div>
+
+<div class="card">
+  <h2>2. Verlinkung zu den Routen</h2>
+  <ul>
+    <li><a href="login">/login</a></li>
+    <li><a href="register">/register</a></li>
+    <li><a href="dashboard">/dashboard</a></li>
+    <li><a href="rooms">/rooms</a> (Room-Liste + Form zum Anlegen)</li>
+    <li><a href="chat?roomId=2">/chat?roomId=2</a> (Chat + Formular zum Senden)</li>
+    <li><a href="profile">/profile</a></li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>3. Screenshot des Hauptformulars</h2>
+  <p>
+    Screenshot der Chat-Seite mit Formular zum Senden einer neuen Nachricht:
+  </p>
+  <img src="a06/screenshot.png" alt="Screenshot – Chat Formular">
+</div>
+
+<div class="card">
+  <h2>4. Implementierte Funktionen (GET/POST)</h2>
+
+  <h3>4.1 GET (Links für Datenänderungen) – Aufgabe 6.1</h3>
+  <ul>
+    <li>
+      <b>Nachricht löschen</b>:
+      <code>GET /message/:id/delete?roomId=...</code><br>
+      Löscht eine Nachricht anhand ihrer ID und leitet anschließend zurück in den Chat-Raum.
+    </li>
+    <li>
+      <b>Nachricht bearbeiten (Formular anzeigen)</b>:
+      <code>GET /message/:id/edit?roomId=...</code><br>
+      Öffnet ein Bearbeitungsformular, das mit dem aktuellen Nachrichtentext befüllt ist.
+    </li>
+    <li>
+      <b>Room umbenennen (Formular anzeigen)</b>:
+      <code>GET /room/:id/edit</code><br>
+      Öffnet ein Formular zum Umbenennen eines Chat-Raums.
+    </li>
+  </ul>
+
+  <h3>4.2 POST (Formulare – neue Datensätze) – Aufgabe 6.2 &amp; 6.3</h3>
+  <ul>
+    <li>
+      <b>Neue Nachricht senden</b>:
+      <code>POST /chat/message</code><br>
+      Liest <code>roomId</code> und <code>text</code> aus <code>req.body</code>, speichert die Nachricht in der SQLite-Datenbank
+      und redirectet zurück in den entsprechenden Chat-Raum.
+    </li>
+    <li>
+      <b>Neuen Room anlegen</b>:
+      <code>POST /rooms</code><br>
+      Liest <code>name</code> aus <code>req.body</code>, erstellt einen neuen Datensatz in der Tabelle <code>room</code>
+      und redirectet zurück zur Room-Liste.
+    </li>
+  </ul>
+
+  <h3>4.3 POST (Formulare – Bearbeitung) – Aufgabe 6.4</h3>
+  <ul>
+    <li>
+      <b>Nachricht bearbeiten (speichern)</b>:
+      <code>POST /message/:id/edit</code><br>
+      Aktualisiert den Nachrichtentext und redirectet zurück in den Chat-Raum.
+    </li>
+    <li>
+      <b>Room umbenennen (speichern)</b>:
+      <code>POST /room/:id/edit</code><br>
+      Aktualisiert den Namen eines Chat-Raums und redirectet zurück zur Room-Liste.
+    </li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>5. Verwendete HTTP-Methoden</h2>
+  <ul>
+    <li><b>GET</b> für Links (z.B. Löschen) und zum Anzeigen von Bearbeitungsformularen</li>
+    <li><b>POST</b> für das Erstellen und Speichern/Ändern von Daten aus Formularen</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>6. Manuelle Tests (Aufgabe 6.5)</h2>
+  <ul>
+    <li>Erstellen: neue Nachricht senden, neuen Room anlegen</li>
+    <li>Ändern per Link: Nachricht löschen</li>
+    <li>Bearbeiten per Formular: Nachricht bearbeiten, Room umbenennen</li>
+    <li>Validierung: leere Eingaben werden nicht gespeichert (HTML <code>required</code> + Server-Check)</li>
+    <li>DB-Prüfung mit <code>sqlite3</code>: Tabelleninhalte wurden kontrolliert</li>
+    <li>Redirects: nach jeder Operation wird auf die erwartete Seite weitergeleitet</li>
+  </ul>
+</div>
+
+</body>
+</html>
