@@ -1,4 +1,6 @@
 import Database from "bun:sqlite";
+import fs from "node:fs";
+import path from "node:path";
 
 let db: Database;
 
@@ -28,9 +30,21 @@ export type Message = {
 };
 
 // CONNECT
-export function connect() {
-  db = new Database("data/chat.db");
+export function connect(dbPath = "data/chat.db") {
+  const dir = path.dirname(dbPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  db = new Database(dbPath);
   db.exec("PRAGMA foreign_keys = ON;");
+}
+
+// DB INIT 
+export function initFromSqlFiles(createSqlPath: string, populateSqlPath: string) {
+  const createSql = fs.readFileSync(createSqlPath, "utf8");
+  const populateSql = fs.readFileSync(populateSqlPath, "utf8");
+
+  db.exec(createSql);
+  db.exec(populateSql);
 }
 
 // QUERIES
@@ -103,4 +117,3 @@ export function updateRoomName(id: number, name: string) {
   const trimmed = name.trim();
   db.query("UPDATE room SET name = ? WHERE id = ?").run(trimmed, id);
 }
-

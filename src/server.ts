@@ -1,9 +1,6 @@
 import express from "express";
 import { engine } from "express-handlebars";
 import path from "node:path";
-import fs from "node:fs";
-import { execSync } from "node:child_process";
-
 import * as db from "./sqlite";
 
 const app = express();
@@ -18,12 +15,12 @@ const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
-// -------------------------------
-// Middleware
-// -------------------------------
+// SQL-Dateien
+const createSqlPath = path.join(rootDir, "data", "create.sql");
+const populateSqlPath = path.join(rootDir, "data", "populate.sql");
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use((req, res, next) => {
   res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
@@ -46,19 +43,11 @@ app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
 // -------------------------------
-// (damit gelöschte Messages nach Neustart wieder da sind
+// DB init
 // -------------------------------
-try {
-  if (fs.existsSync("data/chat.db")) {
-    fs.unlinkSync("data/chat.db");
-  }
-  execSync("sqlite3 data/chat.db < data/create.sql");
-  execSync("sqlite3 data/chat.db < data/populate.sql");
-} catch (e) {
-  console.error("DB init failed:", e);
-}
+db.connect("data/chat.db");
 
-db.connect();
+db.initFromSqlFiles(createSqlPath, populateSqlPath);
 
 // -------------------------------
 // Routes
@@ -99,10 +88,9 @@ app.get("/dashboard", (_req, res) => {
   });
 });
 
-// ROOMS
+// ROOMS (Liste)
 app.get("/rooms", (req, res) => {
   const rooms = db.getAllRooms();
-
   const errorRoomExists = req.query.error === "room-exists";
 
   res.render("rooms", {
@@ -113,20 +101,20 @@ app.get("/rooms", (req, res) => {
   });
 });
 
+// ROOMS 
 app.post("/rooms", (req, res) => {
   const name = String(req.body.name ?? "").trim();
   if (name.length === 0) return res.redirect("/rooms");
 
   try {
     db.createRoom(name);
+    return res.redirect("/rooms");
   } catch {
     return res.redirect("/rooms?error=room-exists");
   }
-
-  return res.redirect("/rooms");
 });
 
-// Formular anzeigen
+// ROOM EDIT 
 app.get("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige room id");
@@ -140,9 +128,7 @@ app.get("/room/:id/edit", (req, res) => {
   });
 });
 
-
-
-// Speichern
+// ROOM EDIT (speichern)
 app.post("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const name = String(req.body.name ?? "").trim();
@@ -152,11 +138,10 @@ app.post("/room/:id/edit", (req, res) => {
 
   try {
     db.updateRoomName(id, name);
+    return res.redirect("/rooms");
   } catch {
     return res.redirect(`/room/${id}/edit?error=exists`);
   }
-
-  return res.redirect("/rooms");
 });
 
 // CHAT
@@ -174,7 +159,6 @@ app.get("/chat", (req, res) => {
   if (!currentUser) return res.status(500).send("Keine Benutzer vorhanden.");
 
   const messagesRaw = db.getMessagesForRoom(room.id);
-
   const messages = messagesRaw.map((m) => ({
     id: m.id,
     author: m.author,
@@ -203,9 +187,7 @@ app.get("/profile", (_req, res) => {
   });
 });
 
-// -------------------------------
-// Nachricht bearbeiten 
-// -------------------------------
+// MESSAGE EDIT 
 app.get("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -222,9 +204,7 @@ app.get("/message/:id/edit", (req, res) => {
   });
 });
 
-// -------------------------------
-// Nachricht bearbeiten
-// -------------------------------
+// MESSAGE EDIT (speichern)
 app.post("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.body.roomId);
@@ -235,16 +215,11 @@ app.post("/message/:id/edit", (req, res) => {
 
   db.updateMessageText(id, text);
 
-  if (Number.isFinite(roomId) && roomId > 0) {
-    return res.redirect(`/chat?roomId=${roomId}`);
-  }
+  if (Number.isFinite(roomId) && roomId > 0) return res.redirect(`/chat?roomId=${roomId}`);
   return res.redirect("/rooms");
 });
 
-
-// -------------------------------
-// Nachricht löschen 
-// -------------------------------
+// MESSAGE DELETE 
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -253,15 +228,11 @@ app.get("/message/:id/delete", (req, res) => {
 
   db.deleteMessage(id);
 
-  if (Number.isFinite(roomId) && roomId > 0) {
-    return res.redirect(`/chat?roomId=${roomId}`);
-  }
+  if (Number.isFinite(roomId) && roomId > 0) return res.redirect(`/chat?roomId=${roomId}`);
   return res.redirect("/rooms");
 });
 
-// -------------------------------
-// Nachricht senden 
-// -------------------------------
+// MESSAGE SEND 
 app.post("/chat/message", (req, res) => {
   const roomId = Number(req.body.roomId);
   const text = String(req.body.text ?? "").trim();
@@ -275,7 +246,6 @@ app.post("/chat/message", (req, res) => {
   if (!currentUser) return res.status(500).send("Kein Benutzer in der Datenbank.");
 
   db.insertMessage(roomId, currentUser.id, text);
-
   return res.redirect(`/chat?roomId=${roomId}`);
 });
 
