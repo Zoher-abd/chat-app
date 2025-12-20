@@ -1,10 +1,11 @@
 import express from "express";
 import { engine } from "express-handlebars";
-import path from "node:path";
+import * as path from "node:path";
 import * as db from "./sqlite";
 
 const app = express();
 const port = 8080;
+
 app.set("trust proxy", true);
 
 // -------------------------------
@@ -16,16 +17,28 @@ const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
-// SQL-Dateien
 const createSqlPath = path.join(rootDir, "data", "create.sql");
 const populateSqlPath = path.join(rootDir, "data", "populate.sql");
 
+// -------------------------------
+// Middleware
+// -------------------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// ✅ base wie in den Folien (für Links in HTML)
 app.use((req, res, next) => {
   res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
 });
+
+// ✅ Redirect helper, der auf WE1 im Prefix bleibt
+function R(req: any, res: any, to: string) {
+  // BHT WE1 Prefix aus URL erkennen
+  const m = req.originalUrl.match(/^\/service\/we1\/[^/]+/);
+  const prefix = m ? m[0] : "";
+  return res.redirect(prefix + to);
+}
 
 // Static
 app.use(express.static(staticPath));
@@ -37,9 +50,10 @@ app.engine(
     extname: ".handlebars",
     defaultLayout: "main",
     layoutsDir: layoutsPath,
-    partialsDir: partialsPath,
+    partialsDir: partialsPath, // kann bleiben, auch wenn du keine Partials nutzt
   })
 );
+
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
@@ -47,7 +61,6 @@ app.set("views", viewsPath);
 // DB init
 // -------------------------------
 db.connect("data/chat.db");
-
 db.initFromSqlFiles(createSqlPath, populateSqlPath);
 
 // -------------------------------
@@ -57,7 +70,7 @@ app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
 
-app.get("/", (_req, res) => res.redirect("/login"));
+app.get("/", (req, res) => R(req, res, "/login"));
 
 // LOGIN
 app.get("/login", (_req, res) => {
@@ -102,20 +115,20 @@ app.get("/rooms", (req, res) => {
   });
 });
 
-// ROOMS 
+// ROOMS (neu)
 app.post("/rooms", (req, res) => {
   const name = String(req.body.name ?? "").trim();
-  if (name.length === 0) return res.redirect("/rooms");
+  if (name.length === 0) return R(req, res, "/rooms");
 
   try {
     db.createRoom(name);
-    return res.redirect("/rooms");
+    return R(req, res, "/rooms");
   } catch {
-    return res.redirect("/rooms?error=room-exists");
+    return R(req, res, "/rooms?error=room-exists");
   }
 });
 
-// ROOM EDIT 
+// ROOM EDIT
 app.get("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige room id");
@@ -123,25 +136,21 @@ app.get("/room/:id/edit", (req, res) => {
   const room = db.getRoomById(id);
   if (!room) return res.status(404).send("Room nicht gefunden");
 
-  res.render("room-edit", {
-    title: "Room bearbeiten",
-    room,
-  });
+  res.render("room-edit", { title: "Room bearbeiten", room });
 });
 
-// ROOM EDIT (speichern)
 app.post("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const name = String(req.body.name ?? "").trim();
 
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige room id");
-  if (name.length === 0) return res.redirect(`/room/${id}/edit?error=empty`);
+  if (name.length === 0) return R(req, res, `/room/${id}/edit?error=empty`);
 
   try {
     db.updateRoomName(id, name);
-    return res.redirect("/rooms");
+    return R(req, res, "/rooms");
   } catch {
-    return res.redirect(`/room/${id}/edit?error=exists`);
+    return R(req, res, `/room/${id}/edit?error=exists`);
   }
 });
 
@@ -152,7 +161,7 @@ app.get("/chat", (req, res) => {
   const rooms = db.getAllRooms();
   if (rooms.length === 0) return res.status(500).send("Keine Räume in der Datenbank.");
 
-  const room = rooms.find((r) => r.id === roomId) ?? rooms[0];
+  const room = rooms.find((rr) => rr.id === roomId) ?? rooms[0];
   if (!room) return res.status(500).send("Konnte keinen Raum bestimmen.");
 
   const users = db.getAllUsers();
@@ -188,7 +197,7 @@ app.get("/profile", (_req, res) => {
   });
 });
 
-// MESSAGE EDIT 
+// MESSAGE EDIT
 app.get("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -205,7 +214,6 @@ app.get("/message/:id/edit", (req, res) => {
   });
 });
 
-// MESSAGE EDIT (speichern)
 app.post("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.body.roomId);
@@ -216,11 +224,11 @@ app.post("/message/:id/edit", (req, res) => {
 
   db.updateMessageText(id, text);
 
-  if (Number.isFinite(roomId) && roomId > 0) return res.redirect(`/chat?roomId=${roomId}`);
-  return res.redirect("/rooms");
+  if (Number.isFinite(roomId) && roomId > 0) return R(req, res, `/chat?roomId=${roomId}`);
+  return R(req, res, "/rooms");
 });
 
-// MESSAGE DELETE 
+// MESSAGE DELETE
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -229,11 +237,11 @@ app.get("/message/:id/delete", (req, res) => {
 
   db.deleteMessage(id);
 
-  if (Number.isFinite(roomId) && roomId > 0) return res.redirect(`/chat?roomId=${roomId}`);
-  return res.redirect("/rooms");
+  if (Number.isFinite(roomId) && roomId > 0) return R(req, res, `/chat?roomId=${roomId}`);
+  return R(req, res, "/rooms");
 });
 
-// MESSAGE SEND 
+// MESSAGE SEND
 app.post("/chat/message", (req, res) => {
   const roomId = Number(req.body.roomId);
   const text = String(req.body.text ?? "").trim();
@@ -247,7 +255,7 @@ app.post("/chat/message", (req, res) => {
   if (!currentUser) return res.status(500).send("Kein Benutzer in der Datenbank.");
 
   db.insertMessage(roomId, currentUser.id, text);
-  return res.redirect(`/chat?roomId=${roomId}`);
+  return R(req, res, `/chat?roomId=${roomId}`);
 });
 
 // 404
