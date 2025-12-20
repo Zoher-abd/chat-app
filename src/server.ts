@@ -5,7 +5,6 @@ import * as db from "./sqlite";
 
 const app = express();
 const port = 8080;
-
 app.set("trust proxy", true);
 
 // -------------------------------
@@ -17,34 +16,14 @@ const layoutsPath = path.join(viewsPath, "layouts");
 const partialsPath = path.join(viewsPath, "partials");
 const staticPath = path.join(rootDir, "static");
 
+// SQL-Dateien
 const createSqlPath = path.join(rootDir, "data", "create.sql");
 const populateSqlPath = path.join(rootDir, "data", "populate.sql");
 
-// -------------------------------
-// Middleware
-// -------------------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// ✅ BASE für BHT/WE1: /service/we1/<kennung>
-// (Damit Links/Formular-Actions auf WE1 korrekt sind)
 app.use((req, res, next) => {
-  // 1) Proxy Prefix (falls vorhanden)
-  const xfPrefix = req.headers["x-forwarded-prefix"];
-  if (typeof xfPrefix === "string" && xfPrefix.length > 0) {
-    res.locals.base = xfPrefix;
-    return next();
-  }
-
-  // 2) BHT WE1 Prefix direkt aus URL erkennen
-  const m = req.originalUrl.match(/^\/service\/we1\/[^/]+/);
-  if (m) {
-    res.locals.base = m[0]; // z.B. "/service/we1/zoab2358"
-    return next();
-  }
-
-  // 3) Lokal
-  res.locals.base = "";
+  res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
 });
 
@@ -65,9 +44,10 @@ app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
 // -------------------------------
-// DB init (WE1-sicher)
+// DB init
 // -------------------------------
 db.connect("data/chat.db");
+
 db.initFromSqlFiles(createSqlPath, populateSqlPath);
 
 // -------------------------------
@@ -122,7 +102,7 @@ app.get("/rooms", (req, res) => {
   });
 });
 
-// ROOMS (neu anlegen)
+// ROOMS 
 app.post("/rooms", (req, res) => {
   const name = String(req.body.name ?? "").trim();
   if (name.length === 0) return res.redirect("/rooms");
@@ -135,7 +115,7 @@ app.post("/rooms", (req, res) => {
   }
 });
 
-// ROOM EDIT (Formular anzeigen)
+// ROOM EDIT 
 app.get("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige room id");
@@ -208,7 +188,7 @@ app.get("/profile", (_req, res) => {
   });
 });
 
-// MESSAGE EDIT (Formular)
+// MESSAGE EDIT 
 app.get("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -240,7 +220,7 @@ app.post("/message/:id/edit", (req, res) => {
   return res.redirect("/rooms");
 });
 
-// MESSAGE DELETE
+// MESSAGE DELETE 
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -253,7 +233,7 @@ app.get("/message/:id/delete", (req, res) => {
   return res.redirect("/rooms");
 });
 
-// MESSAGE SEND
+// MESSAGE SEND 
 app.post("/chat/message", (req, res) => {
   const roomId = Number(req.body.roomId);
   const text = String(req.body.text ?? "").trim();
