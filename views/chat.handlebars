@@ -13,20 +13,13 @@
         {{#if mine}}
           <span class="right">
             <a class="btn link"
-               href="{{../base}}/message/{{id}}/edit?roomId={{../activeRoom.id}}"
-               title="Bearbeiten">✏️</a>
-
+               href="{{../base}}/message/{{id}}/edit?roomId={{../activeRoom.id}}">✏️</a>
             <a class="btn link"
-               href="{{../base}}/message/{{id}}/delete?roomId={{../activeRoom.id}}"
-               title="Löschen">🗑️</a>
+               href="{{../base}}/message/{{id}}/delete?roomId={{../activeRoom.id}}">🗑️</a>
           </span>
         {{/if}}
       </div>
     {{/each}}
-
-    {{#if typingUser}}
-      <div class="typing">{{typingUser}} schreibt …</div>
-    {{/if}}
   </div>
 
   <form class="input-bar" method="post" action="{{base}}/chat/message">

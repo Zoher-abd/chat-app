@@ -13,23 +13,12 @@
 
 <section class="card">
   <h2>Rooms</h2>
-
   <div class="rooms">
     {{#each rooms}}
       <div class="room">
-        <a href="{{../base}}/chat?roomId={{id}}">
-          {{name}}
-        </a>
-
-        <a class="btn link right"
-           href="{{../base}}/room/{{id}}/edit"
-           title="Umbenennen">✏️</a>
+        <a href="{{../base}}/chat?roomId={{id}}">{{name}}</a>
+        <a class="btn link right" href="{{../base}}/room/{{id}}/edit">✏️</a>
       </div>
     {{/each}}
   </div>
-</section>
-
-<section class="card">
-  <h2>Benutzer online</h2>
-  <p><b>{{onlineCount}}</b> Nutzer sind derzeit aktiv.</p>
 </section>
