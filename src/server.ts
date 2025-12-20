@@ -20,21 +20,17 @@ const staticPath = path.join(rootDir, "static");
 const createSqlPath = path.join(rootDir, "data", "create.sql");
 const populateSqlPath = path.join(rootDir, "data", "populate.sql");
 
-// -------------------------------
-// Middleware
-// -------------------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ✅ base wie in den Folien (für Links in HTML)
+//  base 
 app.use((req, res, next) => {
   res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
 });
 
-// ✅ Redirect helper, der auf WE1 im Prefix bleibt
+// Redirect helper
 function R(req: any, res: any, to: string) {
-  // BHT WE1 Prefix aus URL erkennen
   const m = req.originalUrl.match(/^\/service\/we1\/[^/]+/);
   const prefix = m ? m[0] : "";
   return res.redirect(prefix + to);
@@ -50,7 +46,7 @@ app.engine(
     extname: ".handlebars",
     defaultLayout: "main",
     layoutsDir: layoutsPath,
-    partialsDir: partialsPath, // kann bleiben, auch wenn du keine Partials nutzt
+    partialsDir: partialsPath, 
   })
 );
 
