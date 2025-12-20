@@ -7,10 +7,7 @@
   <div class="chat-area">
     {{#each messages}}
       <div class="msg {{#if mine}}me{{/if}}">
-        {{#unless mine}}
-          🙂 <b>{{author}}:</b>
-        {{/unless}}
-
+        {{#unless mine}}🙂 <b>{{author}}:</b>{{/unless}}
         {{text}}
 
         {{#if mine}}
@@ -27,20 +24,14 @@
       </div>
     {{/each}}
 
-    <div class="typing">{{typingUser}} schreibt …</div>
+    {{#if typingUser}}
+      <div class="typing">{{typingUser}} schreibt …</div>
+    {{/if}}
   </div>
 
-  <!-- Formular zum Senden einer neuen Nachricht -->
   <form class="input-bar" method="post" action="{{base}}/chat/message">
     <input type="hidden" name="roomId" value="{{activeRoom.id}}">
-
-    <input
-      type="text"
-      name="text"
-      placeholder="Nachricht eingeben …"
-      required
-    >
-
+    <input type="text" name="text" placeholder="Nachricht eingeben …" required>
     <button class="btn primary" type="submit">▶</button>
   </form>
 </section>

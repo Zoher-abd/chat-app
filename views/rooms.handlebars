@@ -1,6 +1,10 @@
 <section class="card">
   <h2>Neuen Raum erstellen</h2>
 
+  {{#if errorRoomExists}}
+    <p style="color:#b00;"><b>Fehler:</b> Raumname existiert schon.</p>
+  {{/if}}
+
   <form method="post" action="{{base}}/rooms">
     <input type="text" name="name" placeholder="Raumname" required>
     <button class="btn primary" type="submit">Anlegen</button>
@@ -13,12 +17,12 @@
   <div class="rooms">
     {{#each rooms}}
       <div class="room">
-        <a href="{{../base}}/chat?roomId={{this.id}}">
-          {{this.name}}
+        <a href="{{../base}}/chat?roomId={{id}}">
+          {{name}}
         </a>
 
         <a class="btn link right"
-           href="{{../base}}/room/{{this.id}}/edit"
+           href="{{../base}}/room/{{id}}/edit"
            title="Umbenennen">✏️</a>
       </div>
     {{/each}}
