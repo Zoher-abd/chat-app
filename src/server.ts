@@ -234,7 +234,7 @@ app.post("/message/:id/edit", (req, res) => {
   return redirectWE1(req, res, "/rooms");
 });
 
-// MESSAGE DELETE ✅ FIXED
+// MESSAGE DELETE 
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
