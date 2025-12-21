@@ -117,7 +117,7 @@ app.get("/rooms", (req, res) => {
   });
 });
 
-// ROOMS (neu)
+// ROOMS
 app.post("/rooms", (req, res) => {
   const name = String(req.body.name ?? "").trim();
   if (name.length === 0) return redirectWE1(req, res, "/rooms");
