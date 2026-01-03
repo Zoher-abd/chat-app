@@ -2,6 +2,7 @@ import express from "express";
 import { engine } from "express-handlebars";
 import * as path from "node:path";
 import * as db from "./sqlite";
+import * as utils from "./utils";
 
 const app = express();
 const port = 8080;
@@ -26,19 +27,19 @@ const populateSqlPath = path.join(rootDir, "data", "populate.sql");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// base 
+// base
 app.use((req, res, next) => {
   res.locals.base = path.relative(path.dirname(req.path), "/") || ".";
   next();
 });
 
-// Redirect 
+// Redirect helper 
 function redirectWE1(req: any, res: any, to: string) {
   const ref = String(req.headers.referer ?? "");
   const refMatch = ref.match(/\/service\/we1\/[^/]+/);
   const urlMatch = String(req.originalUrl ?? "").match(/^\/service\/we1\/[^/]+/);
 
-  const prefix = (refMatch?.[0] ?? urlMatch?.[0] ?? "");
+  const prefix = refMatch?.[0] ?? urlMatch?.[0] ?? "";
   return res.redirect(prefix + to);
 }
 
@@ -55,42 +56,127 @@ app.engine(
     partialsDir: partialsPath,
   })
 );
-
 app.set("view engine", "handlebars");
 app.set("views", viewsPath);
 
-// -------------------------------
+// Flash middleware
+app.use((req, res, next) => {
+  res.locals.flash = utils.getFlash(req, res);
+  next();
+});
+
+
 // DB init
-// -------------------------------
 db.connect("data/chat.db");
 db.initFromSqlFiles(createSqlPath, populateSqlPath);
+// middleware
+function requireAuth(req: any, res: any, next: any) {
+  const user = db.authenticateUser(req);
+  if (!user) return redirectWE1(req, res, "/login");
 
-// -------------------------------
+  req.user = user;
+  res.locals.user = user;
+  next();
+}
+
 // Routes
-// -------------------------------
 app.get("/health", (_req, res) => {
   res.status(200).type("text/plain").send("The server is up and running.");
 });
 
-app.get("/", (req, res) => redirectWE1(req, res, "/login"));
+app.get("/", (req, res) => {
+  const user = db.authenticateUser(req);
+  if (user) return redirectWE1(req, res, "/dashboard");
+  return redirectWE1(req, res, "/login");
+});
 
-// LOGIN
+// LOGIN (GET)
 app.get("/login", (_req, res) => {
   res.render("login", { title: "Login" });
 });
 
-// REGISTER
+// LOGIN (POST)
+app.post("/login", (req, res) => {
+  const loginOrEmail = String(req.body.username ?? "").trim();
+  const password = String(req.body.password ?? "");
+
+  const user = db.checkCredentials(loginOrEmail, password);
+  if (!user) {
+    utils.setFlash(res, "Anmeldung fehlgeschlagen");
+    return redirectWE1(req, res, "/login");
+  }
+
+  res.cookie("user_id", String(user.id), {
+    httpOnly: true,
+    sameSite: "lax",
+  });
+
+  return redirectWE1(req, res, "/dashboard");
+});
+
+// REGISTER (GET)
 app.get("/register", (_req, res) => {
   res.render("register", { title: "Registrieren" });
 });
 
-// DASHBOARD
-app.get("/dashboard", (_req, res) => {
-  const users = db.getAllUsers();
-  const rooms = db.getAllRooms();
+// REGISTER (POST)
+app.post("/register", (req, res) => {
+  const username = String(req.body.username ?? "").trim();
+  const email = String(req.body.email ?? "").trim();
+  const password = String(req.body.password ?? "");
+  const password2 = String(req.body.password2 ?? "");
 
-  const currentUser = users[0];
-  if (!currentUser) return res.status(500).send("Keine Benutzer in der DB.");
+  if (!username || !email || !password || !password2) {
+    utils.setFlash(res, "Bitte alle Felder ausfüllen.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  if (password.length < 8) {
+    utils.setFlash(res, "Passwort muss mindestens 8 Zeichen lang sein.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  if (password !== password2) {
+    utils.setFlash(res, "Passwörter stimmen nicht überein.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  // Username 
+  if (db.getUserByUsername(username)) {
+    utils.setFlash(res, "Username ist bereits vergeben.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  // Email (fehler)
+  if (db.getUserByEmail(email)) {
+    utils.setFlash(res, "E-Mail ist bereits vergeben.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  const passwordHash = Bun.password.hashSync(password);
+
+  try {
+    db.createUser(username, email, passwordHash);
+  } catch {
+    utils.setFlash(res, "Registrierung fehlgeschlagen.");
+    return redirectWE1(req, res, "/register");
+  }
+
+  return redirectWE1(req, res, "/login");
+});
+
+// LOGOUT
+app.get("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  return redirectWE1(req, res, "/login");
+});
+
+app.use(requireAuth);
+
+// DASHBOARD
+app.get("/dashboard", (req: any, res) => {
+  const rooms = db.getAllRooms();
+  const currentUser = req.user;
 
   res.render("dashboard", {
     title: "Chat-App Dashboard",
@@ -117,7 +203,7 @@ app.get("/rooms", (req, res) => {
   });
 });
 
-// ROOMS
+// ROOMS (create)
 app.post("/rooms", (req, res) => {
   const name = String(req.body.name ?? "").trim();
   if (name.length === 0) return redirectWE1(req, res, "/rooms");
@@ -141,7 +227,7 @@ app.get("/room/:id/edit", (req, res) => {
   res.render("room-edit", { title: "Room bearbeiten", room });
 });
 
-// ROOM EDIT (speichern)
+// ROOM EDIT (save)
 app.post("/room/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const name = String(req.body.name ?? "").trim();
@@ -158,7 +244,7 @@ app.post("/room/:id/edit", (req, res) => {
 });
 
 // CHAT
-app.get("/chat", (req, res) => {
+app.get("/chat", (req: any, res) => {
   const roomId = Number(req.query.roomId ?? 2);
 
   const rooms = db.getAllRooms();
@@ -167,9 +253,7 @@ app.get("/chat", (req, res) => {
   const room = rooms.find((rr) => rr.id === roomId) ?? rooms[0];
   if (!room) return res.status(500).send("Konnte keinen Raum bestimmen.");
 
-  const users = db.getAllUsers();
-  const currentUser = users[0];
-  if (!currentUser) return res.status(500).send("Keine Benutzer vorhanden.");
+  const currentUser = req.user;
 
   const messagesRaw = db.getMessagesForRoom(room.id);
   const messages = messagesRaw.map((m) => ({
@@ -189,10 +273,8 @@ app.get("/chat", (req, res) => {
 });
 
 // PROFILE
-app.get("/profile", (_req, res) => {
-  const users = db.getAllUsers();
-  const currentUser = users[0];
-  if (!currentUser) return res.status(500).send("Keine Benutzer in der DB.");
+app.get("/profile", (req: any, res) => {
+  const currentUser = req.user;
 
   res.render("profile", {
     title: "Profil / Einstellungen",
@@ -217,7 +299,7 @@ app.get("/message/:id/edit", (req, res) => {
   });
 });
 
-// MESSAGE EDIT (speichern)
+// MESSAGE EDIT (save)
 app.post("/message/:id/edit", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.body.roomId);
@@ -234,7 +316,7 @@ app.post("/message/:id/edit", (req, res) => {
   return redirectWE1(req, res, "/rooms");
 });
 
-// MESSAGE DELETE 
+// MESSAGE DELETE
 app.get("/message/:id/delete", (req, res) => {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
@@ -250,7 +332,7 @@ app.get("/message/:id/delete", (req, res) => {
 });
 
 // MESSAGE SEND
-app.post("/chat/message", (req, res) => {
+app.post("/chat/message", (req: any, res) => {
   const roomId = Number(req.body.roomId);
   const text = String(req.body.text ?? "").trim();
 
@@ -258,10 +340,7 @@ app.post("/chat/message", (req, res) => {
     return res.redirect("back");
   }
 
-  const users = db.getAllUsers();
-  const currentUser = users[0];
-  if (!currentUser) return res.status(500).send("Kein Benutzer in der Datenbank.");
-
+  const currentUser = req.user;
   db.insertMessage(roomId, currentUser.id, text);
 
   return redirectWE1(req, res, `/chat?roomId=${roomId}`);

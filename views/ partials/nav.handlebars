@@ -1,8 +1,12 @@
 <nav>
-  <a href="{{base}}/login">Login</a>
-  <a href="{{base}}/register">Registrieren</a>
-  <a href="{{base}}/dashboard">Dashboard</a>
-  <a href="{{base}}/rooms">Rooms</a>
-  <a href="{{base}}/chat?roomId=2">Chat</a>
-  <a href="{{base}}/profile">Profil</a>
+  {{#if user}}
+    <a href="{{base}}/dashboard">Dashboard</a>
+    <a href="{{base}}/rooms">Rooms</a>
+    <a href="{{base}}/chat?roomId=2">Chat</a>
+    <a href="{{base}}/profile">Profil</a>
+    <a href="{{base}}/logout" class="btn link right">Logout</a>
+  {{else}}
+    <a href="{{base}}/login">Login</a>
+    <a href="{{base}}/register">Registrieren</a>
+  {{/if}}
 </nav>

@@ -1,19 +1,19 @@
 <header class="row">
   <h2>Profil</h2>
-  <a class="btn right" href="/rooms">Zurück</a>
+  <a class="btn right" href="{{base}}/rooms">Zurück</a>
 </header>
 
 <main>
   <section class="card" style="text-align:center">
     <div style="width:120px;height:120px;border:2px solid #222;border-radius:50%;margin:0 auto 8px;"></div>
     <div>{{user.username}}</div>
-    <button class="btn" style="margin-top:8px">Edit</button>
+    <button class="btn" style="margin-top:8px" type="button">Edit</button>
   </section>
 
   <section class="card list">
     <div class="item">Sprache ändern</div>
     <div class="item">Account wechseln</div>
     <div class="item">Über uns</div>
-    <div class="item">Ausloggen</div>
+    <a class="item" href="{{base}}/logout">Ausloggen</a>
   </section>
 </main>

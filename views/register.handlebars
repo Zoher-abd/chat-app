@@ -1,22 +1,28 @@
 <header><h1>Registrieren</h1></header>
 
+{{#if flash}}
+  <section class="card">
+    <div class="flash">{{flash}}</div>
+  </section>
+{{/if}}
+
 <section class="card">
-  <form>
+  <form method="post" action="{{base}}/register">
     <label for="user">Username</label>
-    <input id="user" type="text">
+    <input id="user" name="username" type="text" required>
 
     <label for="mail">E-Mail</label>
-    <input id="mail" type="email">
+    <input id="mail" name="email" type="email" required>
 
     <label for="p1">Passwort</label>
-    <input id="p1" type="password">
+    <input id="p1" name="password" type="password" required>
 
     <label for="p2">Passwort bestätigen</label>
-    <input id="p2" type="password">
+    <input id="p2" name="password2" type="password" required>
 
     <div class="row" style="margin-top:12px">
-      <button class="btn primary" formaction="/rooms">Konto erstellen</button>
-      <a class="btn right" href="/login">Zurück</a>
+      <button class="btn primary" type="submit">Konto erstellen</button>
+      <a class="btn right" href="{{base}}/login">Zurück</a>
     </div>
   </form>
 </section>

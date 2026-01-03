@@ -1,4 +1,3 @@
-
 import { Database } from "bun:sqlite";
 
 export type User = {

@@ -186,3 +186,11 @@ fieldset {
     border-bottom: 2px solid var(--line);
     padding: 10px 4px
 }
+
+.flash {
+  background: #ffecec;
+  border: 1px solid #f5a5a5;
+  color: #a40000;
+  padding: 10px;
+  margin-bottom: 12px;
+}

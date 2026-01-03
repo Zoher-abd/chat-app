@@ -1,10 +1,10 @@
--- Drop in richtiger Reihenfolge (wegen Foreign Keys)
+-- Drop in richtiger Reihenfolge
 drop table if exists message;
 drop table if exists room_member;
 drop table if exists room;
 drop table if exists user;
 
--- USER: registrierte Benutzer der Chat-App
+-- USER: registrierte Benutzer 
 create table if not exists user (
   id            integer primary key,
   username      text    not null unique,
