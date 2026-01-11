@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A08 – Refactoring & Tests</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; line-height: 1.5; }
+    .card { max-width: 900px; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    code { background: #f3f3f3; padding: 2px 6px; border-radius: 6px; }
+    pre { background: #f7f7f7; padding: 12px; border-radius: 10px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <h1>Aufgabe 8 – Refactoring & Unit-Tests</h1>
+
+  <section class="card">
+    <h2>1) Kurzbeschreibung des Refactorings</h2>
+    <p>
+      Die Anwendung wurde schrittweise refactored, um Verantwortlichkeiten klar zu trennen.
+      Zuvor enthielt <code>server.ts</code> sowohl Routing als auch Business-Logik und DB-Zugriffe.
+      Durch die Umstrukturierung wurden DB-Zugriffe in Repositories ausgelagert, Request/Response-Logik in
+      Controller-Module überführt und wiederverwendbare Funktionen als Utilities/Middleware organisiert.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>2) Neue Architektur & Verzeichnisstruktur</h2>
+    <pre><code>src/
+  controllers/
+    authController.ts
+    roomController.ts
+    chatController.ts
+    profileController.ts
+  repositories/
+    database.ts
+    userRepo.ts
+    roomRepo.ts
+    messageRepo.ts
+  middleware/
+    baseMiddleware.ts
+    flashMiddleware.ts
+    requireAuth.ts
+  utils/
+    cookies.ts
+    flash.ts
+    redirect.ts
+  server.ts
+  cookies.ts 
+  sqlite.ts
+  utlis.ts
+  db.ts
+
+
+tests/
+  cookies.test.ts
+  flash.test.ts</code></pre>
+
+    <p><b>Schichten:</b></p>
+    <ul>
+      <li><b>Routes (server.ts)</b>: registriert Endpunkte und Middlewares</li>
+      <li><b>Controller</b>: verarbeitet Requests/Responses und View-Daten</li>
+      <li><b>Repositories</b>: kapseln SQL/DB-Operationen</li>
+      <li><b>Middleware/Utils</b>: wiederverwendbare Querschnittsfunktionen (Flash, Auth, Redirect, Cookies)</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>3) Tests</h2>
+    <p>
+      Es wurden Unit-Tests mit <code>bun test</code> für Utility-Funktionen erstellt (z.B. Cookie-Parsing).
+      Dadurch sind Kernfunktionen unabhängig vom Express-Server testbar.
+    </p>
+    <ul>
+      <li><code>tests/cookies.test.ts</code>: Testet <code>parseCookies</code></li>
+      <li><code>tests/flash.test.ts</code>: Minimaler Test für Flash-Cookie-Verarbeitung</li>
+    </ul>
+  </section>
+</body>
+</html>

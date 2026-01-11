@@ -47,3 +47,4 @@ create table if not exists message (
   foreign key (user_id) references user(id) on delete cascade,
   foreign key (room_id) references room(id) on delete cascade
 );
+ 
