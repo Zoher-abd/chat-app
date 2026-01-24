@@ -1,10 +1,18 @@
 import type { Request, Response } from "express";
-import { deleteMessage, getMessageById, getMessagesForRoom, insertMessage, updateMessageText } from "../repositories/messageRepo";
+import {
+  deleteMessage,
+  getMessageById,
+  getMessagesForRoom,
+  insertMessage,
+  updateMessageText,
+} from "../repositories/messageRepo";
 import { getAllRooms } from "../repositories/roomRepo";
 import { redirectWE1 } from "../utils/redirect";
+import { sse } from "../sse";
 
 export function getChat(req: any, res: Response) {
   const roomId = Number(req.query.roomId ?? 2);
+
   const rooms = getAllRooms();
   if (rooms.length === 0) return res.status(500).send("Keine Räume in der Datenbank.");
 
@@ -30,14 +38,22 @@ export function getChat(req: any, res: Response) {
   });
 }
 
-export function postMessage(req: any, res: any) {
-  const roomId = Number(req.body.roomId);
-  const text = String(req.body.text ?? "").trim();
+export function postMessage(req: any, res: Response) {
+  // ✅ robust gegen undefined body
+  const roomId = Number(req.body?.roomId);
+  const text = String(req.body?.text ?? "").trim();
 
-  if (!Number.isFinite(roomId) || roomId <= 0 || !text) return res.redirect("back");
+  if (!Number.isFinite(roomId) || roomId <= 0 || text.length === 0) {
+    return res.status(400).send("Bad Request");
+  }
 
   insertMessage(roomId, req.user.id, text);
-  return redirectWE1(req, res, `/chat?roomId=${roomId}`);
+
+  // ✅ live update: alle reloaden
+  sse.send({ op: "refresh" });
+
+  // ✅ wichtig: kein redirect für fetch
+  return res.status(204).end();
 }
 
 export function getMessageEdit(req: Request, res: Response) {
@@ -58,13 +74,16 @@ export function getMessageEdit(req: Request, res: Response) {
 
 export function postMessageEdit(req: Request, res: Response) {
   const id = Number(req.params.id);
-  const roomId = Number(req.body.roomId);
-  const text = String(req.body.text ?? "").trim();
+  const roomId = Number(req.body?.roomId);
+  const text = String(req.body?.text ?? "").trim();
 
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige message id");
   if (!text) return res.redirect("back");
 
   updateMessageText(id, text);
+
+  // reload für alle
+  sse.send({ op: "refresh" });
 
   if (Number.isFinite(roomId) && roomId > 0) return redirectWE1(req, res, `/chat?roomId=${roomId}`);
   return redirectWE1(req, res, "/rooms");
@@ -73,9 +92,13 @@ export function postMessageEdit(req: Request, res: Response) {
 export function getMessageDelete(req: Request, res: Response) {
   const id = Number(req.params.id);
   const roomId = Number(req.query.roomId);
+
   if (!Number.isFinite(id)) return res.status(400).send("Ungültige message id");
 
   deleteMessage(id);
+
+  // reload für alle
+  sse.send({ op: "refresh" });
 
   if (Number.isFinite(roomId) && roomId > 0) return redirectWE1(req, res, `/chat?roomId=${roomId}`);
   return redirectWE1(req, res, "/rooms");

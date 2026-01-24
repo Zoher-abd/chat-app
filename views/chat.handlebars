@@ -4,9 +4,9 @@
 </header>
 
 <section class="card">
-  <div class="chat-area">
+  <div class="chat-area" id="message-list">
     {{#each messages}}
-      <div class="msg {{#if mine}}me{{/if}}">
+      <div id="msg-{{id}}" class="msg {{#if mine}}me{{/if}}">
         {{#unless mine}}🙂 <b>{{author}}:</b>{{/unless}}
         {{text}}
 
@@ -29,9 +29,9 @@
     {{/if}}
   </div>
 
-  <form class="input-bar" method="post" action="{{base}}/chat/message">
+  <form class="input-bar" id="chat-form" method="post" action="{{base}}/chat/message">
     <input type="hidden" name="roomId" value="{{activeRoom.id}}">
-    <input type="text" name="text" placeholder="Nachricht eingeben …" required>
+    <input type="text" id="chat-text" name="text" placeholder="Nachricht eingeben …" required>
     <button class="btn primary" type="submit">▶</button>
   </form>
 </section>

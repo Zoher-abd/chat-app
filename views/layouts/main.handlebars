@@ -4,7 +4,14 @@
   <meta charset="utf-8">
   <title>{{title}}</title>
   <link rel="stylesheet" href="{{base}}/a03/style.css">
+
+  <script>
+    window.__BASE = "{{base}}";
+  </script>
+
+  <script src="{{base}}/events.js"></script>
 </head>
+
 <body>
   <header>
     <h1>Chat-App</h1>
@@ -16,6 +23,7 @@
       <a href="{{base}}/rooms">Rooms</a>
       <a href="{{base}}/chat?roomId=2">Chat</a>
       <a href="{{base}}/profile">Profil</a>
+      <a href="{{base}}/logout">Logout</a>
     </nav>
   </header>
 
